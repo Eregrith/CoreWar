@@ -1,0 +1,15 @@
+﻿Modifiers from '88 emulation
+
+Opcode                  A-mode  B-mode  modifier
+------------------------------------------------
+DAT                     #$@<>   #$@<>   F
+MOV,CMP                 #       #$@<>   AB
+                        $@<>    #       B
+                        $@<>    $@<>    I
+ADD,SUB,MUL,DIV,MOD     #       #$@<>   AB
+                        $@<>    #       B
+                        $@<>    $@<>    F
+SLT                     #       #$@<>   AB
+                        $@<>    #$@<>   B
+JMP,JMZ,JMN,DJN,SPL     #$@<>   #$@<>   B
+------------------------------------------------
