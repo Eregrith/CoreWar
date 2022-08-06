@@ -10,6 +10,7 @@ namespace Corewar.Core
 {
     public class Champion
     {
+        public int Index { get; set; }
         public bool IsAlive { get; set; } = true;
         public MemoryCell[] Instructions { get; }
         public string? Name => Identity?.Name;

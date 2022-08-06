@@ -12,16 +12,18 @@ namespace Corewar.Core.Memory
         private readonly MemoryCell[] _memory;
         private readonly int _size;
         private int _currentInstructionPointer;
+        private int _currentChampionIndex;
         public int NextInstructionPointer { get; private set; }
         public int? NewTaskSpawningAt { get; private set; }
 
         public bool Success { get; private set; }
 
-        public Instruction(MemoryCell[] memory, int currentInstructionPointer)
+        public Instruction(MemoryCell[] memory, int currentInstructionPointer, int currentChampionIndex = 0)
         {
             _memory = memory;
             _currentInstructionPointer = currentInstructionPointer;
             _size = memory.Length;
+            _currentChampionIndex = currentChampionIndex;
         }
 
         internal void Execute()
@@ -183,6 +185,7 @@ namespace Corewar.Core.Memory
                     _memory[WrapPointer(writePointerB)].BNumber = bCell.BNumber - 1;
                     break;
             }
+            _memory[WrapPointer(writePointerB)].IndexOfLastChampToWriteHere = _currentChampionIndex;
         }
 
         private void JumpInstruction(MemoryCell operation, int readPointerA, MemoryCell bCell, Func<int, bool> comparison, Func<bool, bool, bool> combination)
@@ -287,6 +290,7 @@ namespace Corewar.Core.Memory
                     }
                     break;
             }
+            _memory[WrapPointer(writePointerB)].IndexOfLastChampToWriteHere = _currentChampionIndex;
         }
 
         private void ArithmeticInstruction(MemoryCell operation, int writePointerB, MemoryCell aCell, MemoryCell bCell, Func<int, int, int> op)
@@ -300,10 +304,10 @@ namespace Corewar.Core.Memory
                     _memory[WrapPointer(writePointerB)].BNumber = op(bCell.BNumber, aCell.BNumber);
                     break;
                 case Modifier.AB:
-                    _memory[WrapPointer(writePointerB)].ANumber = op(bCell.ANumber, aCell.BNumber);
+                    _memory[WrapPointer(writePointerB)].BNumber = op(bCell.BNumber, aCell.ANumber);
                     break;
                 case Modifier.BA:
-                    _memory[WrapPointer(writePointerB)].BNumber = op(bCell.BNumber, aCell.ANumber);
+                    _memory[WrapPointer(writePointerB)].ANumber = op(bCell.ANumber, aCell.BNumber);
                     break;
                 case Modifier.F:
                 case Modifier.I:
@@ -315,6 +319,7 @@ namespace Corewar.Core.Memory
                     _memory[WrapPointer(writePointerB)].ANumber = op(bCell.BNumber, aCell.ANumber);
                     break;
             }
+            _memory[WrapPointer(writePointerB)].IndexOfLastChampToWriteHere = _currentChampionIndex;
         }
 
         private void MOV(MemoryCell operation, int writePointerB, MemoryCell aCell)
@@ -345,6 +350,7 @@ namespace Corewar.Core.Memory
                     _memory[WrapPointer(writePointerB)].BNumber = aCell.ANumber;
                     break;
             }
+            _memory[WrapPointer(writePointerB)].IndexOfLastChampToWriteHere = _currentChampionIndex;
         }
 
         private void DAT()

@@ -17,6 +17,8 @@ Log.Logger = new LoggerConfiguration()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors();
+
 builder.Services.AddMediatR(typeof(Program));
 
 builder.Services.AddTransient<IRandomGenerator, RandomGenerator>();
@@ -30,6 +32,9 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseCors(policy => policy.AllowAnyHeader()
+                                .AllowAnyOrigin()
+                                .AllowAnyMethod());
 }
 
 app.MapPost("/CreateBattle", async (ILoggerFactory loggerFactory, IMediator mediator, CreateCoreWarBattleCommand command, CancellationToken token) =>

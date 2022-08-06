@@ -1,0 +1,189 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<style>
+
+    .memory {
+        border: 1px solid black;
+        margin: 5px;
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .cell {
+        display: inline-flex;
+        width: 30px !important;
+        height: 30px !important;
+        border: 1px solid gray;
+        padding: 5px;
+        font-size: 10px;
+    }
+
+    .mini .cell {
+        width: 10px !important;
+        height: 10px !important;
+        padding: 5px;
+        font: none;
+    }
+
+    .cell.next {
+        border: 1px solid red;
+    }
+
+    .champOne {
+        background-color: rgb(51, 51, 255);
+    }
+
+    .champTwo {
+        background-color: rgb(255, 51, 51);
+    }
+
+</style>
+
+<div id="core"></div>
+<div class="config">
+    <form>
+        <div class="mb-3">
+            <label for="coreSize" class="form-label">Core Size</label>
+            <input type="text" class="form-control" id="coreSize" aria-describedby="coreSizeHelp">
+            <div id="coreSizeHelp" class="form-text">Number of memory cells</div>
+        </div>
+        <div class="mb-3">
+            <label for="champOne" class="form-label">Champ one</label>
+            <textarea type="text" class="form-control" id="champOne" aria-describedby="champOneHelp"></textarea>
+            <div id="champOneHelp" class="form-text">Redcode of first champion</div>
+        </div>
+        <div class="mb-3">
+            <label for="champTwo" class="form-label">Champ two</label>
+            <textarea type="text" class="form-control" id="champTwo" aria-describedby="champTwoHelp"></textarea>
+            <div id="champTwoHelp" class="form-text">Redcode of second champion</div>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="Start()">(Re)Start</button>
+        <button type="button" class="btn btn-warning" id="step" onclick="Step()">Step</button>
+        <button type="button" class="btn btn-success" id="play_pause" onclick="TogglePlay()">Play</button>
+    </form>
+</div>
+
+<script>
+    
+    function Start() {
+        var coreSize = $("#coreSize").val();
+        var championOne = $("#champOne").val();
+        var championTwo = $("#champTwo").val();
+
+        $.ajax({
+            method: "POST",
+            url: "http://localhost:5002/CreateBattle",
+            data: JSON.stringify({ coreSize, championOne, championTwo }),
+            dataType: 'json',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json' 
+            },
+        })
+        .done(function (result) {
+            replaceCoreWithResult(result);
+        });
+    }
+    
+    function Step() {
+        $("#step").attr("disabled", "disabled");
+        $.ajax({
+            method: "POST",
+            url: "http://localhost:5002/Step",
+            data: JSON.stringify({}),
+            dataType: 'json',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json' 
+            },
+        })
+        .done(function (result) {
+            $("#step").removeAttr("disabled");
+            replaceCoreWithResult(result);
+            if (keepPlaying) {
+                setTimeout(Step, 100);
+            }
+        });
+    }
+
+    var keepPlaying = false;
+    function TogglePlay() {
+        keepPlaying = !keepPlaying;
+        if (keepPlaying) {
+            $("#play_pause").html("Pause");
+            $("#play_pause").removeClass("btn-success");
+            $("#play_pause").addClass("btn-secondary");
+            Step();
+        } else {
+            $("#play_pause").html("Play");
+            $("#play_pause").addClass("btn-success");
+            $("#play_pause").removeClass("btn-secondary");
+        }
+    }
+
+    function replaceCoreWithResult(result) {
+        var coreView = makeCoreView(result.mars.memory, result.mars.nextMove.instructionPointer);
+        var championOne = makeChampion(result.mars.champions[0], result.mars.nextMove.champion);
+        var championTwo = makeChampion(result.mars.champions[1], result.mars.nextMove.champion);
+
+        $("#core").html("");
+        $("#core").append(coreView);
+        $("#core").append(championOne);
+        $("#core").append(championTwo);
+    }
+
+    function makeCoreView(memory, nextIP, ) {
+        var size = memory.length;
+        console.log("size:", size);
+        var memoryDiv = document.createElement("div");
+        $(memoryDiv).addClass("memory");
+        if (size > 630) {
+            $(memoryDiv).addClass("mini");
+        }
+        for (var i = 0; i < size; i++) {
+            var next = '';
+            if (i == nextIP)
+                next = 'next';
+
+            var opcode = size <= 630 ? getOpcode(memory[i].opcode) : '';
+            var champColor = getChampColor(memory[i].indexOfLastChampToWriteHere);
+            $(memoryDiv).append("<div class='cell " + next + " " + champColor + "'>" + opcode + "</div>");
+        }
+        return memoryDiv;
+    }
+
+    function getChampColor(idx) {
+        if (idx == 0)
+            return 'champOne';
+        if (idx == 1)
+            return 'champTwo';
+        return '';
+    }
+
+    function getOpcode(opcode) {
+        switch (opcode) {
+            case 0:  return 'dat';
+            case 1:  return 'mov';
+            case 2:  return 'add';
+            case 3:  return 'sub';
+            case 4:  return 'mul';
+            case 5:  return 'div';
+            case 6:  return 'mod';
+            case 7:  return 'jmp';
+            case 8:  return 'jmz';
+            case 9:  return 'jmn';
+            case 10: return 'djn';
+            case 11: return 'cmp';
+            case 12: return 'slt';
+            case 13: return 'spl';
+            case 14: return 'equ';
+        }
+    }
+
+    function makeChampion(champ, nextChamp) {
+        return "<div class='champion'>Champ is alive: " + (champ.isAlive ? "Yes" : "No") + "</div>";
+    }
+
+</script>

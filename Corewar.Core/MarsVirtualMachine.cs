@@ -19,7 +19,6 @@ namespace Corewar.Core
         private Dictionary<int, Champion> _champions = new Dictionary<int, Champion>();
         public Champion? Winner { get; private set; }
         public NextMove NextMove => new(NextInstruction.Key, NextInstruction.Value.Peek());
-
         private KeyValuePair<Champion, Queue<int>> NextInstruction => InstructionPointers.Peek();
         private Queue<KeyValuePair<Champion, Queue<int>>> InstructionPointers { get; set; } = new Queue<KeyValuePair<Champion, Queue<int>>>();
         public int MinimumSpacing { get; internal set; } = 0;
@@ -48,6 +47,7 @@ namespace Corewar.Core
                 loadIndex = TryGenerateRandomIndexForChampion(c);
             else
                 loadIndex = (_champions.Last().Key + Separation) % _size;
+            c.Index = _champions.Count;
             _champions.Add(loadIndex, c);
             CopyChampionTo(loadIndex, c);
             InstructionPointers.Enqueue(new(c, new Queue<int>(new[] { loadIndex + c.Origin })));
@@ -83,6 +83,7 @@ namespace Corewar.Core
             for (int i = 0; i < c.Instructions.Length; i++)
             {
                 Memory[(startIndex + i) % _size] = c.Instructions[i];
+                Memory[(startIndex + i) % _size].IndexOfLastChampToWriteHere = _champions.Count - 1;
             }
         }
 
@@ -94,12 +95,12 @@ namespace Corewar.Core
             var nextChamp = InstructionPointers.Dequeue();
             var currentInstructionPointer = nextChamp.Value.Dequeue();
 
-            Instruction instruction = new Instruction(Memory, currentInstructionPointer);
+            Instruction instruction = new Instruction(Memory, currentInstructionPointer, nextChamp.Key.Index);
             instruction.Execute();
 
             if (instruction.Success)
             {
-                nextChamp.Value.Enqueue((currentInstructionPointer + 1) % _size);
+                nextChamp.Value.Enqueue((instruction.NextInstructionPointer) % _size);
                 if (instruction.NewTaskSpawningAt.HasValue)
                 {
                     nextChamp.Value.Enqueue(instruction.NewTaskSpawningAt!.Value);

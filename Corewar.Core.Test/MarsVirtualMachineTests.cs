@@ -112,6 +112,29 @@ namespace Corewar.Core.Test
         }
 
         [Test]
+        public void Should_Mark_Cells_As_Written_By_Loaded_Champion()
+        {
+            Champion c1 = new Champion(new MemoryCell(), new MemoryCell());
+            Champion c2 = new Champion(new MemoryCell(), new MemoryCell());
+            int randomSpace = 24;
+            int randomSpaceForSecondChamp = 52;
+            Mock<IRandomGenerator> randomMock = new Mock<IRandomGenerator>();
+            randomMock.SetupSequence(m => m.Next(0, 100))
+                .Returns(randomSpace)
+                .Returns(randomSpaceForSecondChamp);
+            MarsVirtualMachine testedVm = new MarsVirtualMachine(100, randomMock.Object);
+            
+            testedVm.LoadChampion(c1);
+            testedVm.LoadChampion(c2);
+
+            testedVm.Memory[0].IndexOfLastChampToWriteHere.Should().Be(-1);
+            testedVm.Memory[randomSpace].IndexOfLastChampToWriteHere.Should().Be(0);
+            testedVm.Memory[randomSpace + 1].IndexOfLastChampToWriteHere.Should().Be(0);
+            testedVm.Memory[randomSpaceForSecondChamp].IndexOfLastChampToWriteHere.Should().Be(1);
+            testedVm.Memory[randomSpaceForSecondChamp + 1].IndexOfLastChampToWriteHere.Should().Be(1);
+        }
+
+        [Test]
         public void Should_Retry_If_Champion_Would_Load_Overlapping_Another_Big_One()
         {
             Champion c1 = new Champion(new MemoryCell(), new MemoryCell(), new MemoryCell(), new MemoryCell(), new MemoryCell());
@@ -253,6 +276,7 @@ namespace Corewar.Core.Test
             testedVm.Step();
 
             testedVm.Memory[randomSpace + 1].Should().Be(testedVm.Memory[randomSpace]);
+            testedVm.Memory[randomSpace + 1].IndexOfLastChampToWriteHere.Should().Be(0);
         }
 
         [Test]
@@ -316,6 +340,38 @@ namespace Corewar.Core.Test
 
             testedVm.NextMove.Champion.Should().Be(c);
             testedVm.NextMove.InstructionPointer.Should().Be(randomSpace + 1);
+            testedVm.Memory[randomSpace + 11].IndexOfLastChampToWriteHere.Should().Be(1);
+        }
+
+        [Test]
+        public void Should_Replace_Champion_InstructionPointer_After_Jumping()
+        {
+            Champion c = new ChampionBuilder()
+                .AddOpcode(Opcodes.JMP)
+                    .With_Modifier(Modifier.A)
+                    .With_Operand_A_direct(2)
+                    .End()
+                .Build();
+            Champion c2 = new ChampionBuilder()
+                .AddOpcode(Opcodes.MOV)
+                    .With_Modifier(Modifier.I)
+                    .With_Operand_A_direct(0)
+                    .With_Operand_B_direct(1)
+                    .End()
+                .Build();
+            int randomSpace = 24;
+            Mock<IRandomGenerator> randomMock = new Mock<IRandomGenerator>();
+            randomMock.Setup(m => m.Next(0, 100)).Returns(randomSpace);
+            MarsVirtualMachine testedVm = new MarsVirtualMachine(100, randomMock.Object);
+            testedVm.Separation = 10;
+            testedVm.LoadChampion(c);
+            testedVm.LoadChampion(c2);
+
+            testedVm.Step();
+            testedVm.Step();
+
+            testedVm.NextMove.Champion.Should().Be(c);
+            testedVm.NextMove.InstructionPointer.Should().Be(randomSpace + 2);
         }
 
         [Test]

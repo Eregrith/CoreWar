@@ -250,6 +250,28 @@ namespace Corewar.Core.Test.Memory
             memory[2].BNumber.Should().Be(memory[1].ANumber);
         }
 
+        [TestCase(Opcodes.MOV)]
+        [TestCase(Opcodes.ADD)]
+        [TestCase(Opcodes.SUB)]
+        [TestCase(Opcodes.MUL)]
+        [TestCase(Opcodes.DIV)]
+        [TestCase(Opcodes.MOD)]
+        [TestCase(Opcodes.DJN)]
+        public void Should_Mark_Target_Cell_As_Written_By_Loaded_Champion_When_Executing_Writing_Opcodes(Opcodes opcode)
+        {
+            MemoryCell[] memory = new MemoryCell[]
+            {
+                new MemoryCell(opcode, Modifier.I, AddressMode.Direct, 0, AddressMode.Direct, 1),
+                new MemoryCell()
+            };
+            int currentChampionIndex = 2;
+            var instruction = new Instruction(memory, 0, currentChampionIndex);
+
+            instruction.Execute();
+
+            memory[1].IndexOfLastChampToWriteHere.Should().Be(currentChampionIndex);
+        }
+
         [Test]
         public void Should_Execute_ADD_A_Properly()
         {
@@ -292,7 +314,7 @@ namespace Corewar.Core.Test.Memory
 
             instruction.Execute();
 
-            memory[1].ANumber.Should().Be(6);
+            memory[1].BNumber.Should().Be(22);
         }
 
         [Test]
@@ -307,7 +329,7 @@ namespace Corewar.Core.Test.Memory
 
             instruction.Execute();
 
-            memory[1].BNumber.Should().Be(22);
+            memory[1].ANumber.Should().Be(6);
         }
 
         [TestCase(Modifier.F)]
@@ -526,14 +548,14 @@ namespace Corewar.Core.Test.Memory
             {
                 MemoryCell.DAT(0),
                 MemoryCell.DAT(0),
-                new MemoryCell(Opcodes.JMP, Modifier.A, AddressMode.Direct, 2, AddressMode.Direct, 0),
+                new MemoryCell(Opcodes.JMP, Modifier.A, AddressMode.Direct, -2, AddressMode.Immediate, 0),
                 MemoryCell.DAT(0),
             };
             var instruction = new Instruction(memory, 2);
 
             instruction.Execute();
 
-            instruction.NextInstructionPointer.Should().Be(4);
+            instruction.NextInstructionPointer.Should().Be(0);
         }
 
         [TestCase(Modifier.A)]

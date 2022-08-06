@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreWar.API", "CoreWar.API\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoreWar.API.Test", "CoreWar.API.Test\CoreWar.API.Test.csproj", "{2DE31B45-0CE6-4264-A763-E80868465A93}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{7E53C124-4F4B-4E36-AAC2-7A60AA3A06E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{2DE31B45-0CE6-4264-A763-E80868465A93}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DE31B45-0CE6-4264-A763-E80868465A93}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DE31B45-0CE6-4264-A763-E80868465A93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E53C124-4F4B-4E36-AAC2-7A60AA3A06E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E53C124-4F4B-4E36-AAC2-7A60AA3A06E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E53C124-4F4B-4E36-AAC2-7A60AA3A06E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E53C124-4F4B-4E36-AAC2-7A60AA3A06E9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
